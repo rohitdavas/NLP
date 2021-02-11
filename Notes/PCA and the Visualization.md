@@ -319,6 +319,68 @@ for example, images of cats and dogs. A visualization is ![catdog ](F:\Github\NL
 
 ------
 
+### Reducing the dimension  of word embeddings for visualization : *A hands-on implementation of PCA from scratch* 
+
+We have google word vector embeddings of 300 dim. Whereas it's easy to work with the embeddings as the follow rules of algebra, it's not feasible to visualize them. 
+
+*You can think of PCA as a method that projects our vectors in a space of reduced dimension, while keeping the maximum information about the original vectors in their reduced counterparts.* 
+
+In this case, by ***maximum information*** we mean that the Euclidean distance between the original vectors and their projected siblings is minimal. Hence vectors that were originally close in the embeddings dictionary, will produce lower dimensional vectors that are still close to each other.
+
+If you remember the steps from above.
+
+1. *Mean normalize the data*
+
+2. *Compute the covariance matrix of your data*
+
+3. *Compute the eigenvectors and the eigenvalues of your covariance matrix, sorted by decreasing order of their eigen values*
+
+4. *Multiply the first K eigenvectors by your normalized data.*
+
+   ![It should look like this ](F:\Github\NLP\Notes\Images\word_embf.jpg)
+
+   ```python
+   def compute_pca(X, n_components=2):
+       
+       X_demeaned = X - np.mean ( X, axis = 0 )
+   
+       # calculate the covariance matrix
+       covariance_matrix = np.cov ( X, rowvar=False )
+   
+       # calculate eigenvectors & eigenvalues of the covariance matrix
+       eigen_vals, eigen_vecs = np.linalg.eigh ( covariance_matrix, UPLO='L')
+   
+       # sort eigenvalue in increasing order (get the indices from the sort)
+       idx_sorted = np.argsort( eigen_vals )
+       
+       # reverse the order so that it's from highest to lowest.
+       idx_sorted_decreasing = idx_sorted[::-1]
+   
+       # sort the eigen values by idx_sorted_decreasing
+       eigen_vals_sorted = eigen_vals[idx_sorted_decreasing]
+   
+       # sort eigenvectors using the idx_sorted_decreasing indices
+       eigen_vecs_sorted = eigen_vecs[:, idx_sorted_decreasing]
+   
+       # select the first n eigenvectors (n is desired dimension
+       # of rescaled data array, or dims_rescaled_data)
+       eigen_vecs_subset = eigen_vecs_sorted[:, 0:n_components]
+   
+       # transform the data by multiplying the transpose of the eigenvectors 
+       # with the transpose of the de-meaned data
+       # Then take the transpose of that product.
+       X_reduced = np.dot( eigen_vecs_subset.T, X_demeaned.T).T
+   
+       return X_reduced
+   
+   ```
+
+   By using PCA over the word embeddings, you can get results as shown. 
+
+   ![cluster](F:\Github\NLP\Notes\Images\clusters.png)
+
+------
+
 ## Resources
 
 1. Coursera NLP Specialization 
